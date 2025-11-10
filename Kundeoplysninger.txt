@@ -1,0 +1,5 @@
+2345678901Anna                Nielsen             DK987654321098765   000180050DKKNorrebrogade                  45   2    N    Copenhagen          2100DK12345678anna.nielsen@email.dk                       
+3456789012Peter               Andersen            DK555666777888999   000320100DKKVesterbrogade                 12   1    TV   Aarhus              8000DK87654321peter.andersen@post.dk                      
+4567890123Marie               Pedersen            DK111222333444555   000095025DKKOstergade                     7    3    SV   Odense              5000DK65432198marie.pedersen@mail.dk                       
+5678901234Johan               Larsen              DK666777888999000   000410150DKKStrandvejen                   23   1    TV   Aalborg             9000DK98765432johan.larsen@webmail.dk                     
+1234567890Lars                Hansen              DK123445678912345   000250075DKKLautruphojvej                 1    5    TV   Copenhagen          2605DK45888888test.test@test.dk                           

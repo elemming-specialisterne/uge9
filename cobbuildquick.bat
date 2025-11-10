@@ -9,5 +9,6 @@ REM Tilføj bin-mappen til PATH midlertidigt
 set PATH=C:\GnuCOBOL\bin;%PATH%
 
 REM Kald cobc med de rigtige flags
-cobc -I"%COBINC%" -L"%COBLIB%" %*
-pause
+cobc -I"%COBINC%" -L"%COBLIB%" -x %*.cob -o %*.exe -lcob
+
+%*

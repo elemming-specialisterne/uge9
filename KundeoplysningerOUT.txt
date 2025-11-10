@@ -1,0 +1,30 @@
+2345678901
+Anna Nielsen
+Norrebrogade 45, 2. N
+2100 Copenhagen
+tlf. 12345678 Email: anna.nielsen@email.dk
+
+3456789012
+Peter Andersen
+Vesterbrogade 12, 1. TV
+8000 Aarhus
+tlf. 87654321 Email: peter.andersen@post.dk
+
+4567890123
+Marie Pedersen
+Ostergade 7, 3. SV
+5000 Odense
+tlf. 65432198 Email: marie.pedersen@mail.dk
+
+5678901234
+Johan Larsen
+Strandvejen 23, 1. TV
+9000 Aalborg
+tlf. 98765432 Email: johan.larsen@webmail.dk
+
+1234567890
+Lars Hansen
+Lautruphojvej 1, 5. TV
+2605 Copenhagen
+tlf. 45888888 Email: test.test@test.dk
+
