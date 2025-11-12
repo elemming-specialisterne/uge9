@@ -1,14 +1,14 @@
       *****************************************************************
-      * PROGRAM-ID: OPGAVE9                                          *
-      * FORFATTER:  SPAC-23                                          *
-      * DATO:       2025-11-12                                       *
-      * FORMÅL:     Læser kunde- og kontooplysninger og producerer   *
-      *             formateret rapport med kundedata og tilhørende   *
+      * PROGRAM-ID: OPGAVE9                                           *
+      * FORFATTER:  SPAC-23                                           *
+      * DATO:       2025-11-12                                        *
+      * FORMÅL:     Læser kunde- og kontooplysninger og producerer    *
+      *             formateret rapport med kundedata og tilhørende    *
       *             kontooplysninger                                  *
-      * INPUT:      Kundeoplysninger.txt - Kunde stamdata            *
-      *             KontoOpl.txt - Konto oplysninger                 *
-      * OUTPUT:     KundeoplysningerOUT.txt - Formateret rapport     *
-      * NOTER:      Programmet loader alle konti i hukommelse for    *
+      * INPUT:      Kundeoplysninger.txt - Kunde stamdata             *
+      *             KontoOpl.txt - Konto oplysninger                  *
+      * OUTPUT:     KundeoplysningerOUT.txt - Formateret rapport      *
+      * NOTER:      Programmet loader alle konti i hukommelse for     *
       *             bedre performance ved søgning                     *
       *****************************************************************
        IDENTIFICATION DIVISION.
@@ -69,7 +69,7 @@
        
       *****************************************************************
       * MAIN-PROCEDURE                                                *
-      * Formål: Hovedprocedure der koordinerer hele programmet       *
+      * Formål: Hovedprocedure der koordinerer hele programmet        *
       * Flow:   1. Åbner filer                                        *
       *         2. Indlæser alle konti i hukommelse                   *
       *         3. Processerer hver kunde og deres konti              *
@@ -118,7 +118,7 @@
       
       *****************************************************************
       * COPYFILD                                                      *
-      * Formål: Skriver indholdet af NAVN-ADR til output fil og      *
+      * Formål: Skriver indholdet af NAVN-ADR til output fil og       *
       *         rydder NAVN-ADR for næste linje                       *
       *****************************************************************
        COPYFILD.
@@ -132,7 +132,7 @@
       
       *****************************************************************
       * FORMAT-KUNDEID                                                *
-      * Formål: Formatter og skriver kunde ID med label              *
+      * Formål: Formatter og skriver kunde ID med label               *
       *****************************************************************
        FORMAT-KUNDEID.
            STRING  "Kunde ID: " DELIMITED BY SIZE
@@ -143,7 +143,7 @@
 
       *****************************************************************
       * FORMAT-NAVN                                                   *
-      * Formål: Kombinerer fornavn og efternavn til fuldt navn       *
+      * Formål: Kombinerer fornavn og efternavn til fuldt navn        *
       *****************************************************************
        FORMAT-NAVN.
            STRING  FORNAVN     DELIMITED BY SPACE 
@@ -155,7 +155,7 @@
 
       *****************************************************************
       * FORMAT-ADRESSE                                                *
-      * Formål: Formatter adresse med vejnavn, husnr, etage og side  *
+      * Formål: Formatter adresse med vejnavn, husnr, etage og side   *
       *****************************************************************
        FORMAT-ADRESSE.
            STRING  VEJNAVN     DELIMITED BY SPACE 
@@ -183,7 +183,7 @@
 
       *****************************************************************
       * FORMAT-KONTAKT                                                *
-      * Formål: Formatter telefon og email oplysninger               *
+      * Formål: Formatter telefon og email oplysninger                *
       *****************************************************************
        FORMAT-KONTAKT.
            STRING  "tlf. "     DELIMITED BY SIZE
@@ -196,7 +196,7 @@
 
       *****************************************************************
       * FORMAT-KONTO                                                  *
-      * Formål: Finder og skriver alle konti der tilhører denne      *
+      * Formål: Finder og skriver alle konti der tilhører denne       *
       *         kunde ved at søge gennem KONTO-ARRAY                  *
       * Input:  KUNDE-ID fra KUNDEOPL                                 *
       * Output: Formaterede konto linjer                              *
@@ -216,10 +216,10 @@
       
       *****************************************************************
       * READ-KONTO                                                    *
-      * Formål: Læser alle konto records fra KontoOpl.txt ind i      *
+      * Formål: Læser alle konto records fra KontoOpl.txt ind i       *
       *         KONTO-ARRAY for hurtig søgning senere                 *
-      * Output: KONTO-ARRAY fyldt med alle konto records             *
-      * Note:   Kaldes kun én gang ved program start                  *
+      * Output: KONTO-ARRAY fyldt med alle konto records              *
+      * Info:   Kaldes kun én gang ved program start                  *
       *****************************************************************
        READ-KONTO.
            MOVE 1 TO IX                       *> Start ved array index 1
