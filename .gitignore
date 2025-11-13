@@ -1,2 +1,4 @@
 *.exe
 *OUT.txt
+docker/config/*
+docker/data/*
