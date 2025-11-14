@@ -56,6 +56,11 @@
        01 BANK-ARRAY OCCURS 100 TIMES.
            COPY "BANKOPL.cpy".
 
+       01 USD              PIC 9V9 value 6.8.
+       01 EUR              PIC 9V9 value 7.5.
+
+       01 CONVERTED-VALUTA PIC Z(13)9.99.
+
       *================================================================
       * PROCEDURE DIVISION - Hovedprogramlogik
       *================================================================
@@ -91,12 +96,18 @@
                           PERFORM COPYFILD
                           PERFORM COPYFILD
    
-                          PERFORM FORMAT-REG-NR
-                          PERFORM FIND-BANK
-   
+                          PERFORM FORMAT-BANK
                           PERFORM COPYFILD
+
+                          PERFORM FORMAT-KONTOUDSKRIFT-START
+                          PERFORM COPYFILD
+
                           MOVE REG-NR in TRANSAKTIONEROPL to PREV-REG-NR
                        end-if
+                       
+                       PERFORM FORMAT-KONTOUDSKRIFT
+
+
                END-READ
            END-PERFORM
            
@@ -143,11 +154,92 @@
            PERFORM COPYFILD
        EXIT.
 
+       FORMAT-BANK.
+           perform FIND-BANK
+           perform FORMAT-REG-NR
+           perform FORMAT-BANK-NAME
+           perform FORMAT-BANK-ADRESSE
+           perform FORMAT-BANK-TELEFON
+           perform FORMAT-BANK-EMAIL
+           
+           PERFORM COPYFILD
+       EXIT.
+
+       FORMAT-KONTOUDSKRIFT.
+      * Convert currency to DKK
+           EVALUATE VALUTA
+               WHEN "USD"
+                   MULTIPLY FUNCTION NUMVAL(BELØB) BY USD
+                   GIVING CONVERTED-VALUTA
+               WHEN "EUR"
+                   MULTIPLY FUNCTION NUMVAL(BELØB) BY EUR 
+                   GIVING CONVERTED-VALUTA
+               WHEN "DKK"
+                   MOVE BELØB TO CONVERTED-VALUTA
+           end-evaluate
+           string  TIDSPUNKT delimited by space
+                   " " delimited by size
+                   TRANSAKTIONSTYPE delimited by space
+                   " " delimited by size
+                   function trim(BELØB)(1:1) DELIMITED BY SIZE
+                   function Trim(CONVERTED-VALUTA) delimited by space
+                   "DKK " delimited by size
+                   function Trim(BELØB) delimited by space
+                   VALUTA delimited by space
+                   " " delimited by size
+                   BUTIK delimited by space
+                   into NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+
        FORMAT-REG-NR.
            STRING  "                                 " delimited by size
                    "                                 " delimited by size
                    "Registreringsnummer: "             delimited by size
-                   REG-NR in TRANSAKTIONEROPL         delimited by space
+                   REG-NR in BANK-ARRAY(IX)           delimited by space
+                   into NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+
+       FORMAT-BANK-NAME.
+           STRING  "                                 " delimited by size
+                   "                                 " delimited by size
+                   "Bank: "                            delimited by size
+                   BANKNAVN in BANK-ARRAY(IX)         delimited by space
+                   into NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+
+       FORMAT-BANK-ADRESSE.
+           STRING  "                                 " delimited by size
+                   "                                 " delimited by size
+                   "Bankadresse: "                     delimited by size
+                   BANKADRESSE in BANK-ARRAY(IX)      delimited by space
+                   into NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+
+       FORMAT-BANK-TELEFON.
+           STRING  "                                 " delimited by size
+                   "                                 " delimited by size
+                   "Telefon: "                         delimited by size
+                   TELEFON in BANK-ARRAY(IX)          delimited by space
+                   into NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+
+       FORMAT-BANK-EMAIL.
+           STRING  "                                 " delimited by size
+                   "                                 " delimited by size
+                   "E-mail: "                          delimited by size
+                   EMAIL in BANK-ARRAY(IX)            delimited by space
+                   into NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+
+       FORMAT-KONTOUDSKRIFT-START.
+           STRING  "Kontoudskrift for kontonr.: "  delimited by size
+                   KONTO-ID                        delimited by space
                    into NAVN-ADR
            PERFORM COPYFILD
        EXIT.
@@ -171,6 +263,8 @@
                    AT END
                        MOVE "Y" TO END-OF-BANK-FILE
                    NOT AT END
+      *                display IX
+      *                display BANKOPL
       * Gem konto record i array
                        MOVE BANKOPL TO BANK-ARRAY(IX)
       * Gå til næste array position
@@ -185,8 +279,7 @@
        FIND-BANK.
            PERFORM VARYING IX FROM 1 BY 1 UNTIL IX > 100
                IF REG-NR IN BANK-ARRAY(IX) = REG-NR in TRANSAKTIONEROPL
-                   DISPLAY REG-NR IN BANK-ARRAY(IX)
-                   EXIT
+                   EXIT perform 
                END-IF
            END-PERFORM
        EXIT.
