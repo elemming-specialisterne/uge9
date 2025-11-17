@@ -56,10 +56,16 @@
        01 BANK-ARRAY OCCURS 100 TIMES.
            COPY "BANKOPL.cpy".
 
-       01 USD              PIC 9V9 value 6.8.
-       01 EUR              PIC 9V9 value 7.5.
+       01 USD              PIC 9V9 VALUE 6.8.
+       01 EUR              PIC 9V9 VALUE 7.5.
 
-       01 CONVERTED-VALUTA PIC Z(13)9.99.
+       01 CONVERTED-VALUTA     PIC 9(14)V99.
+       01 INDBETALT-DKK        PIC 9(14)V99 VALUE  ZEROES.
+       01 UDBETALT-DKK         PIC 9(14)V99 VALUE ZEROES.
+       01 SALDO-DKK            PIC 9(14)V99 VALUE  ZEROES.
+       01 CONVERTED-DISPLAY    PIC ZZ,ZZZ,ZZZ,ZZZ,ZZ9.99.
+       01 BELØB-DISPLAY        PIC ZZ,ZZZ,ZZZ,ZZZ,ZZ9.99.
+       01 SIGN-DISPLAY         PIC x VALUE " ".
 
       *================================================================
       * PROCEDURE DIVISION - Hovedprogramlogik
@@ -80,6 +86,7 @@
 
       * Læs Banker ind i array
            PERFORM READ-BANKS
+           MOVE 50000 TO SALDO-DKK
 
       * Processér hver kunde og format deres oplysninger
            PERFORM UNTIL END-OF-FILE = "Y"
@@ -87,29 +94,24 @@
                    AT END
                        MOVE "Y" TO END-OF-FILE
                    NOT AT END
-                       if PREV-REG-NR not = REG-NR in TRANSAKTIONEROPL
-                          MOVE SPACES TO NAVN-ADR
-   
-                          PERFORM DASH-LINE
-                          PERFORM FORMAT-KUNDENAVN
-                          PERFORM FORMAT-ADRESSE
-                          PERFORM COPYFILD
-                          PERFORM COPYFILD
-   
-                          PERFORM FORMAT-BANK
-                          PERFORM COPYFILD
+                       IF PREV-REG-NR NOT = REG-NR IN TRANSAKTIONEROPL
+                           AND PREV-REG-NR NOT = SPACES
+                           PERFORM SLUT-KONTO
+                       END-IF
 
-                          PERFORM FORMAT-KONTOUDSKRIFT-START
-                          PERFORM COPYFILD
+                       IF PREV-REG-NR NOT = REG-NR IN TRANSAKTIONEROPL
+                          PERFORM START-KONTO
 
-                          MOVE REG-NR in TRANSAKTIONEROPL to PREV-REG-NR
-                       end-if
+                          MOVE REG-NR IN TRANSAKTIONEROPL TO PREV-REG-NR
+                       END-IF
                        
+                       PERFORM KONTO-MATH
                        PERFORM FORMAT-KONTOUDSKRIFT
 
 
                END-READ
            END-PERFORM
+           PERFORM SLUT-KONTO
            
            CLOSE INPUT-FILE
            CLOSE OUTPUT-FILE
@@ -134,113 +136,146 @@
       *================================================================
       
        DASH-LINE.
-           STRING  "-----------------------------" delimited by size
-                   "-----------------------------" delimited by size
-                   into NAVN-ADR
+           STRING  "-----------------------------" DELIMITED BY SIZE
+                   "-----------------------------" DELIMITED BY SIZE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-KUNDENAVN.
-           STRING  "Kunde: " delimited by size
-                   NAVN delimited by space
-                   into NAVN-ADR
+           STRING  "Kunde: " DELIMITED BY SIZE
+                   NAVN DELIMITED BY SPACE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-ADRESSE.
-           STRING  "Adresse: " delimited by size
-                   ADRESSE delimited by space
-                   into NAVN-ADR
+           STRING  "Adresse: " DELIMITED BY SIZE
+                   ADRESSE DELIMITED BY SPACE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-BANK.
-           perform FIND-BANK
-           perform FORMAT-REG-NR
-           perform FORMAT-BANK-NAME
-           perform FORMAT-BANK-ADRESSE
-           perform FORMAT-BANK-TELEFON
-           perform FORMAT-BANK-EMAIL
+           PERFORM FIND-BANK
+           PERFORM FORMAT-REG-NR
+           PERFORM FORMAT-BANK-NAME
+           PERFORM FORMAT-BANK-ADRESSE
+           PERFORM FORMAT-BANK-TELEFON
+           PERFORM FORMAT-BANK-EMAIL
            
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-KONTOUDSKRIFT.
-      * Convert currency to DKK
-           EVALUATE VALUTA
-               WHEN "USD"
-                   MULTIPLY FUNCTION NUMVAL(BELØB) BY USD
-                   GIVING CONVERTED-VALUTA
-               WHEN "EUR"
-                   MULTIPLY FUNCTION NUMVAL(BELØB) BY EUR 
-                   GIVING CONVERTED-VALUTA
-               WHEN "DKK"
-                   MOVE BELØB TO CONVERTED-VALUTA
-           end-evaluate
-           string  TIDSPUNKT delimited by space
-                   " " delimited by size
-                   TRANSAKTIONSTYPE delimited by space
-                   " " delimited by size
-                   function trim(BELØB)(1:1) DELIMITED BY SIZE
-                   function Trim(CONVERTED-VALUTA) delimited by space
-                   "DKK " delimited by size
-                   function Trim(BELØB) delimited by space
-                   VALUTA delimited by space
-                   " " delimited by size
-                   BUTIK delimited by space
-                   into NAVN-ADR
+           MOVE CONVERTED-VALUTA TO CONVERTED-DISPLAY
+           MOVE FUNCTION NUMVAL(BELØB) TO BELØB-DISPLAY
+      * Handle negative sign for BELØB-DISPLAY
+           IF FUNCTION trim(BELØB)(1:1) = "-"
+               MOVE "-" TO SIGN-DISPLAY
+           ELSE
+               MOVE " " TO SIGN-DISPLAY
+           END-IF
+           STRING  TIDSPUNKT DELIMITED BY SPACE
+                   " " DELIMITED BY SIZE
+                   TRANSAKTIONSTYPE DELIMITED BY SPACE
+                   " " DELIMITED BY SIZE
+                   SIGN-DISPLAY DELIMITED BY SPACE
+                   FUNCTION trim(CONVERTED-DISPLAY) DELIMITED BY SPACE
+                   "DKK " DELIMITED BY SIZE
+                   SIGN-DISPLAY DELIMITED BY SPACE
+                   FUNCTION trim(BELØB-DISPLAY) DELIMITED BY SPACE
+                   VALUTA DELIMITED BY SPACE
+                   " " DELIMITED BY SIZE
+                   BUTIK DELIMITED BY SPACE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-REG-NR.
-           STRING  "                                 " delimited by size
-                   "                                 " delimited by size
-                   "Registreringsnummer: "             delimited by size
-                   REG-NR in BANK-ARRAY(IX)           delimited by space
-                   into NAVN-ADR
+           STRING  "                         " DELIMITED BY SIZE
+                   "                         " DELIMITED BY SIZE
+                   "Registreringsnummer: "     DELIMITED BY SIZE
+                   REG-NR IN BANK-ARRAY(IX)    DELIMITED BY SPACE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-BANK-NAME.
-           STRING  "                                 " delimited by size
-                   "                                 " delimited by size
-                   "Bank: "                            delimited by size
-                   BANKNAVN in BANK-ARRAY(IX)         delimited by space
-                   into NAVN-ADR
+           STRING  "                         " DELIMITED BY SIZE
+                   "                         " DELIMITED BY SIZE
+                   "Bank: "                    DELIMITED BY SIZE
+                   BANKNAVN IN BANK-ARRAY(IX)  DELIMITED BY SPACE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-BANK-ADRESSE.
-           STRING  "                                 " delimited by size
-                   "                                 " delimited by size
-                   "Bankadresse: "                     delimited by size
-                   BANKADRESSE in BANK-ARRAY(IX)      delimited by space
-                   into NAVN-ADR
+           STRING  "                         "     DELIMITED BY SIZE
+                   "                         "     DELIMITED BY SIZE
+                   "Bankadresse: "                 DELIMITED BY SIZE
+                   BANKADRESSE IN BANK-ARRAY(IX)   DELIMITED BY SPACE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-BANK-TELEFON.
-           STRING  "                                 " delimited by size
-                   "                                 " delimited by size
-                   "Telefon: "                         delimited by size
-                   TELEFON in BANK-ARRAY(IX)          delimited by space
-                   into NAVN-ADR
+           STRING  "                         " DELIMITED BY SIZE
+                   "                         " DELIMITED BY SIZE
+                   "Telefon: "                 DELIMITED BY SIZE
+                   TELEFON IN BANK-ARRAY(IX)   DELIMITED BY SPACE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-BANK-EMAIL.
-           STRING  "                                 " delimited by size
-                   "                                 " delimited by size
-                   "E-mail: "                          delimited by size
-                   EMAIL in BANK-ARRAY(IX)            delimited by space
-                   into NAVN-ADR
+           STRING  "                         " DELIMITED BY SIZE
+                   "                         " DELIMITED BY SIZE
+                   "E-mail: "                  DELIMITED BY SIZE
+                   EMAIL IN BANK-ARRAY(IX)     DELIMITED BY SPACE
+                   INTO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
        FORMAT-KONTOUDSKRIFT-START.
-           STRING  "Kontoudskrift for kontonr.: "  delimited by size
-                   KONTO-ID                        delimited by space
-                   into NAVN-ADR
+           STRING  "Kontoudskrift for kontonr.: "  DELIMITED BY SIZE
+                   KONTO-ID                        DELIMITED BY SPACE
+                   INTO NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+       
+       FORMAT-INDBETALING.
+           MOVE INDBETALT-DKK TO CONVERTED-DISPLAY 
+           STRING  "Totalt indbetalt (DKK): " DELIMITED BY SIZE
+                   FUNCTION trim(CONVERTED-DISPLAY) DELIMITED BY SPACE
+                   INTO NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+       FORMAT-UDBETALING.
+           MOVE UDBETALT-DKK TO CONVERTED-DISPLAY 
+           STRING  "Totalt udbetalt (DKK): " DELIMITED BY SIZE
+                   "-" DELIMITED BY SPACE
+                   FUNCTION trim(CONVERTED-DISPLAY) DELIMITED BY SPACE
+                   INTO NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+       FORMAT-SALDO.
+           IF FUNCTION trim(SALDO-DKK)(1:1) = "-"
+               MOVE "-" TO SIGN-DISPLAY
+           ELSE
+               MOVE " " TO SIGN-DISPLAY
+           END-IF
+           MOVE SALDO-DKK TO CONVERTED-DISPLAY 
+           STRING  "Totalt udbetalt (DKK): " DELIMITED BY SIZE
+                   SIGN-DISPLAY DELIMITED BY SPACE
+                   FUNCTION trim(CONVERTED-DISPLAY) DELIMITED BY SPACE
+                   INTO NAVN-ADR
+           PERFORM COPYFILD
+       EXIT.
+       FORMAT-SIGNOUT.
+           MOVE "Med venlig hilse" TO NAVN-ADR
+           PERFORM COPYFILD
+           MOVE function  trim(BANKNAVN IN BANK-ARRAY(IX)) TO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
@@ -255,6 +290,61 @@
       * Output: KONTO-ARRAY fyldt med alle konto records              *
       * Info:   Kaldes kun én gang ved program start                  *
       *****************************************************************
+       START-KONTO.
+           MOVE SPACES TO NAVN-ADR
+           PERFORM DASH-LINE
+    
+           PERFORM FORMAT-KUNDENAVN
+           PERFORM FORMAT-ADRESSE
+           PERFORM COPYFILD
+           PERFORM COPYFILD
+       
+           PERFORM FORMAT-BANK
+           PERFORM COPYFILD
+    
+           PERFORM FORMAT-KONTOUDSKRIFT-START
+           PERFORM COPYFILD
+       EXIT.
+       
+       SLUT-KONTO.
+           PERFORM COPYFILD
+           PERFORM COPYFILD
+           PERFORM FORMAT-INDBETALING
+           PERFORM FORMAT-UDBETALING
+           PERFORM FORMAT-SALDO
+           PERFORM COPYFILD
+
+           PERFORM FORMAT-SIGNOUT
+           PERFORM COPYFILD
+           PERFORM COPYFILD
+           PERFORM COPYFILD
+
+           MOVE zeroes to INDBETALT-DKK
+           MOVE zeroes to UDBETALT-DKK
+           MOVE 50000 to SALDO-DKK
+       EXIT.
+       KONTO-MATH.
+      * Convert currency to DKK
+           EVALUATE VALUTA
+               WHEN "USD"
+                   MULTIPLY FUNCTION NUMVAL(BELØB) BY USD
+                   GIVING CONVERTED-VALUTA
+               WHEN "EUR"
+                   MULTIPLY FUNCTION NUMVAL(BELØB) BY EUR 
+                   GIVING CONVERTED-VALUTA
+               WHEN "DKK"
+                   MOVE FUNCTION NUMVAL(BELØB) TO CONVERTED-VALUTA
+           END-EVALUATE
+           EVALUATE FUNCTION trim(BELØB)(1:1)
+               WHEN "-"
+                   ADD CONVERTED-VALUTA TO UDBETALT-DKK
+                   SUBTRACT CONVERTED-VALUTA FROM SALDO-DKK
+               WHEN OTHER
+                   ADD CONVERTED-VALUTA TO INDBETALT-DKK
+                   ADD CONVERTED-VALUTA TO SALDO-DKK
+           END-EVALUATE
+       EXIT.
+
        READ-BANKS.
            MOVE 1 TO IX                       *> Start ved array index 1
            OPEN INPUT INPUT-BANK-FILE
@@ -279,7 +369,7 @@
        FIND-BANK.
            PERFORM VARYING IX FROM 1 BY 1 UNTIL IX > 100
                IF REG-NR IN BANK-ARRAY(IX) = REG-NR in TRANSAKTIONEROPL
-                   EXIT perform 
+                   EXIT PERFORM 
                END-IF
            END-PERFORM
        EXIT.
