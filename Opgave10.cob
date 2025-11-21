@@ -101,8 +101,6 @@
 
                        IF PREV-REG-NR NOT = REG-NR IN TRANSAKTIONEROPL
                           PERFORM START-KONTO
-
-                          MOVE REG-NR IN TRANSAKTIONEROPL TO PREV-REG-NR
                        END-IF
                        
                        PERFORM KONTO-MATH
@@ -275,7 +273,7 @@
        FORMAT-SIGNOUT.
            MOVE "Med venlig hilse" TO NAVN-ADR
            PERFORM COPYFILD
-           MOVE function  trim(BANKNAVN IN BANK-ARRAY(IX)) TO NAVN-ADR
+           MOVE FUNCTION  trim(BANKNAVN IN BANK-ARRAY(IX)) TO NAVN-ADR
            PERFORM COPYFILD
        EXIT.
 
@@ -304,6 +302,8 @@
     
            PERFORM FORMAT-KONTOUDSKRIFT-START
            PERFORM COPYFILD
+
+           MOVE REG-NR IN TRANSAKTIONEROPL TO PREV-REG-NR
        EXIT.
        
        SLUT-KONTO.
@@ -319,9 +319,9 @@
            PERFORM COPYFILD
            PERFORM COPYFILD
 
-           MOVE zeroes to INDBETALT-DKK
-           MOVE zeroes to UDBETALT-DKK
-           MOVE 50000 to SALDO-DKK
+           MOVE ZEROES TO INDBETALT-DKK
+           MOVE ZEROES TO UDBETALT-DKK
+           MOVE 50000 TO SALDO-DKK
        EXIT.
        KONTO-MATH.
       * Convert currency to DKK
