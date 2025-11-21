@@ -402,18 +402,6 @@
            END-IF
        EXIT.
        
-      * Shift procedures to make room for new entries
-       SHIFT-DOWN-FROM-1.
-      * Move position 1 to 2, and position 2 to 3
-           MOVE TOP-KUNDER(2) TO TOP-KUNDER(3)
-           MOVE TOP-KUNDER(1) TO TOP-KUNDER(2)
-       EXIT.
-       
-       SHIFT-DOWN-FROM-2.
-      * Move position 2 to 3
-           MOVE TOP-KUNDER(2) TO TOP-KUNDER(3)
-       EXIT.
-       
        SHIFT-DOWN-TOP-KUNDER.
       * Move position 2 to 3
            MOVE 3 TO SWAP-1
@@ -439,7 +427,7 @@
        FIND-BUTIK-TYPE.
       * Find matching store type in BUTIK array
            PERFORM VARYING S-IX FROM 1 BY 1 UNTIL S-IX > 13
-               IF BUTIK IN TRANSAKTIONEROPL = B-TYPE(S-IX)
+               IF BUTIK IN TRANSAKTIONEROPL = B-TYPE IN BUTIK-ARR(S-IX)
                    EXIT PERFORM
                END-IF
            END-PERFORM
@@ -447,42 +435,23 @@
 
        SORT-BUTIKER-BY-SALDO.
       * Bubble sort BUTIK array by B-SALDO (descending order)
-           MOVE 1 TO SWAP-1
-           PERFORM UNTIL SWAP-1 > 12
-               DISPLAY SWAP-1
-               MOVE 1 TO SWAP-2
-               PERFORM UNTIL SWAP-2 > (13 - SWAP-1)
-                   IF B-SALDO IN BUTIK-ARR(SWAP-2) < 
-                      B-SALDO IN BUTIK-ARR(SWAP-2 + 1)
-                       PERFORM SWAP-BUTIK-ENTRIES
-                   END-IF
-                   ADD 1 TO SWAP-2
-               END-PERFORM
-               ADD 1 TO SWAP-1
-           END-PERFORM
-       EXIT.
-
-       SWAP-BUTIK-ENTRIES.
-      * Swap BUTIK entries at positions SWAP-2 and SWAP-2+1
-           MOVE BUTIK-ARR(SWAP-2) TO BUTIK-ARR(14)
-           MOVE BUTIK-ARR(SWAP-2 + 1) TO BUTIK-ARR(SWAP-2)
-           MOVE BUTIK-ARR(14) TO BUTIK-ARR(SWAP-2 + 1)
+           SORT BUTIK-ARR ON DESCENDING KEY B-SALDO
        EXIT.
 
        INIT-BUTIKKER.
-           MOVE "Supermarked         " TO B-TYPE(1)
-           MOVE "Tojbutik            " TO B-TYPE(2)
-           MOVE "Elektronikbutik     " TO B-TYPE(3)
-           MOVE "Restaurant          " TO B-TYPE(4)
-           MOVE "Boghandel           " TO B-TYPE(5)
-           MOVE "Apotek              " TO B-TYPE(6)
-           MOVE "Tankstation         " TO B-TYPE(7)
-           MOVE "Cafe                " TO B-TYPE(8)
-           MOVE "Biograf             " TO B-TYPE(9)
-           MOVE "Mobelbutik          " TO B-TYPE(10)
-           MOVE "Blomsterhandler     " TO B-TYPE(11)
-           MOVE "Bageri              " TO B-TYPE(12)
-           MOVE "Fitnesscenter       " TO B-TYPE(13)
+           MOVE "Supermarked         " TO B-TYPE IN BUTIK-ARR(1)
+           MOVE "Tojbutik            " TO B-TYPE IN BUTIK-ARR(2)
+           MOVE "Elektronikbutik     " TO B-TYPE IN BUTIK-ARR(3)
+           MOVE "Restaurant          " TO B-TYPE IN BUTIK-ARR(4)
+           MOVE "Boghandel           " TO B-TYPE IN BUTIK-ARR(5)
+           MOVE "Apotek              " TO B-TYPE IN BUTIK-ARR(6)
+           MOVE "Tankstation         " TO B-TYPE IN BUTIK-ARR(7)
+           MOVE "Cafe                " TO B-TYPE IN BUTIK-ARR(8)
+           MOVE "Biograf             " TO B-TYPE IN BUTIK-ARR(9)
+           MOVE "Mobelbutik          " TO B-TYPE IN BUTIK-ARR(10)
+           MOVE "Blomsterhandler     " TO B-TYPE IN BUTIK-ARR(11)
+           MOVE "Bageri              " TO B-TYPE IN BUTIK-ARR(12)
+           MOVE "Fitnesscenter       " TO B-TYPE IN BUTIK-ARR(13)
        EXIT.
 
        INIT-MÅNEDER.
