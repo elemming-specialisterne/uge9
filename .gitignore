@@ -1,5 +1,6 @@
 *.exe
 *OUT.txt
+*.txt
 Kontoudskrifter.txt
 docker/config/*
 docker/data/*
