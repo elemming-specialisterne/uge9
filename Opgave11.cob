@@ -59,7 +59,7 @@
        01 TOP-KUNDER OCCURS 4 TIMES.
            02 KUNDE-ID         PIC X(15) VALUE SPACES.
            02 NAVN             PIC X(30) VALUE SPACES.
-           02 SALDO            PIC 9(14)V99 VALUE  ZEROES.
+           02 SALDO            PIC 9(14)V99 VALUE ZEROES.
 
        01 M-IX                 PIC 9(2) VALUE 1.
        01 S-IX                 PIC 9(2) VALUE 1.
@@ -220,6 +220,7 @@
                    ", Navn: " DELIMITED BY SIZE
                    NAVN IN TOP-KUNDER(4) DELIMITED BY SPACE
                    ", Saldo: " DELIMITED BY SIZE
+                   SIGN-DISPLAY DELIMITED BY SIZE
                    FUNCTION trim(CONVERTED-DISPLAY) DELIMITED BY SPACE
                    "DKK " DELIMITED BY SIZE
                    INTO NAVN-ADR
@@ -379,43 +380,7 @@
            MOVE NAVN IN TRANSAKTIONEROPL TO NAVN IN TOP-KUNDER(4)  
            MOVE SALDO-DKK TO SALDO IN TOP-KUNDER(4)
            
-      * Check if better than position 1 (highest)
-           IF SALDO-DKK > SALDO IN TOP-KUNDER(1)
-              MOVE 1 TO SWAP-2
-              PERFORM SHIFT-DOWN-TOP-KUNDER
-              MOVE 1 TO SWAP-1
-              PERFORM INSERT-AT-POSITION
-           ELSE
-      * Check if better than position 2
-              IF SALDO-DKK > SALDO IN TOP-KUNDER(2)
-                 MOVE 2 TO SWAP-2
-                 PERFORM SHIFT-DOWN-TOP-KUNDER
-                 MOVE 2 TO SWAP-1
-                 PERFORM INSERT-AT-POSITION
-              ELSE
-      * Check if better than position 3
-                 IF SALDO-DKK > SALDO IN TOP-KUNDER(3)
-                    MOVE 3 TO SWAP-1
-                    PERFORM INSERT-AT-POSITION
-                 END-IF
-              END-IF
-           END-IF
-       EXIT.
-       
-       SHIFT-DOWN-TOP-KUNDER.
-      * Move position 2 to 3
-           MOVE 3 TO SWAP-1
-           PERFORM UNTIL SWAP-1 = SWAP-2
-               MOVE TOP-KUNDER(SWAP-1 - 1) to TOP-KUNDER(SWAP-1)
-               SUBTRACT 1 FROM SWAP-1
-           END-PERFORM
-           ADD 1 TO SWAP-1
-           MOVE TOP-KUNDER(2) TO TOP-KUNDER(3)
-       EXIT.
-       
-      * Insert procedures
-       INSERT-AT-POSITION.
-           MOVE TOP-KUNDER(4) TO TOP-KUNDER(SWAP-1)
+           SORT TOP-KUNDER ON DESCENDING KEY SALDO
        EXIT.
 
        FIND-MÅNED.

@@ -4,3 +4,4 @@
 Kontoudskrifter.txt
 docker/config/*
 docker/data/*
+.venv/*
